@@ -1,5 +1,3 @@
-version: '3.9'
-
 networks:
   spark-net:
     driver: bridge
@@ -10,32 +8,60 @@ volumes:
 
 services:
   spark-master:
-    build: .
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.spark
     container_name: spark-master
     environment:
       - SPARK_MASTER_HOST=spark-master
       - SPARK_MASTER_PORT=7077
       - SPARK_MASTER_MEMORY=1G
     ports:
-      - "8080:8080"   # UI del master
-      - "7077:7077"   # Puerto de comunicación con workers
+      - "8080:8080"
+      - "7077:7077"
     networks:
       - spark-net
     volumes:
-      - spark-logs:/opt/spark/logs
-      - spark-data:/opt/spark/data
+      - ./spark-logs:/opt/spark/logs
+      - ./spark-data:/opt/spark/data
+      - ./data:/opt/spark/input
+      - ./jobs:/opt/spark/jobs
     command: >
-      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master -h spark-master -p 7077"
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master -h spark-master -p 7077
 
   spark-worker:
-    build: .
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.spark
     environment:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=1
     networks:
       - spark-net
     volumes:
-      - spark-logs:/opt/spark/logs
-      - spark-data:/opt/spark/data
+      - ./spark-logs:/opt/spark/logs
+      - ./spark-data:/opt/spark/data
+    depends_on:
+      - spark-master
     command: >
-      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    deploy:
+      replicas: 3
+
+  jupyter:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.jupyter
+    container_name: spark-jupyter
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8888:8888"
+    networks:
+      - spark-net
+    volumes:
+      - ./notebooks:/home/jupyter/notebooks
+      - ./jobs:/home/jupyter/jobs
+      - ./data:/home/jupyter/data
+    depends_on:
+      - spark-master

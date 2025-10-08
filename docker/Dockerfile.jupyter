@@ -1,0 +1,25 @@
+# Imagen base
+FROM python:3.11-slim
+
+# Crear usuario jupyter y carpeta base
+RUN useradd -ms /bin/bash jupyter
+
+WORKDIR /home/jupyter
+
+# Instalar dependencias
+RUN pip install --no-cache-dir pyspark notebook jupyterlab
+
+# Crear directorios necesarios y ajustar permisos
+RUN mkdir -p /home/jupyter/.local/share/jupyter/runtime && \
+    chown -R jupyter:jupyter /home/jupyter
+
+# Copiar requirements si existe
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt || echo "Sin requirements.txt"
+
+# Cambiar usuario (mejor práctica)
+USER jupyter
+
+# Exponer puerto y lanzar Jupyter
+EXPOSE 8888
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--no-browser", "--allow-root", "--notebook-dir=/home/jupyter/notebooks"]

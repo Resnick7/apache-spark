@@ -22,6 +22,6 @@ WORKDIR /opt/spark
 # Por defecto, arrancar bash (podés sobreescribir con master/worker)
 CMD ["bash"]
 
-LABEL maintainer="Antonella Capadona antocapatona7@gmail.com"
+LABEL maintainer="Antonella Capadona <antocapatona7@gmail.com>"
 LABEL version="1.0"
 LABEL description="Imagen de Apache Spark 3.5.7 con Python 3"
