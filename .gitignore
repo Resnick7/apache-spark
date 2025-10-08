@@ -1,0 +1,33 @@
+# Logs y datos generados por Spark
+spark-logs/
+spark-data/
+
+# Archivos de Docker locales
+*.log
+*.pid
+*.swp
+*.tmp
+docker-compose.override.yml
+.env
+
+# Archivos de construcción de Docker
+*.tar
+*.img
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+*.egg-info/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Sistema
+.DS_Store
+Thumbs.db

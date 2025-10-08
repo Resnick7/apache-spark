@@ -1,0 +1,41 @@
+version: '3.9'
+
+networks:
+  spark-net:
+    driver: bridge
+
+volumes:
+  spark-logs:
+  spark-data:
+
+services:
+  spark-master:
+    build: .
+    container_name: spark-master
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_MEMORY=1G
+    ports:
+      - "8080:8080"   # UI del master
+      - "7077:7077"   # Puerto de comunicación con workers
+    networks:
+      - spark-net
+    volumes:
+      - spark-logs:/opt/spark/logs
+      - spark-data:/opt/spark/data
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master -h spark-master -p 7077"
+
+  spark-worker:
+    build: .
+    environment:
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    networks:
+      - spark-net
+    volumes:
+      - spark-logs:/opt/spark/logs
+      - spark-data:/opt/spark/data
+    command: >
+      bash -c "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077"
